@@ -1,16 +1,12 @@
 {
-  "name": "minecraft-monitor",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node --experimental-modules index.mjs"
-  },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.92.0",
     "@aws-sdk/client-sns": "^3.94.0",
-    "@aws-sdk/credential-providers": "^3.92.0"
+    "commander": "^9.2.0"
+  },
+  "scripts": {
+    "go": "node --experimental-modules index.mjs",
+    "start:prod": "npm run go -- --environment=prod",
+    "start:dev": "npm run go -- --environment=dev"
   }
 }
