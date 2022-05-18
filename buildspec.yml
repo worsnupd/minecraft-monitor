@@ -5,7 +5,7 @@ phases:
     commands:
       - ECR_BASE_URI=023800829229.dkr.ecr.us-east-1.amazonaws.com
       - REPOSITORY_NAME=minecraft-monitor
-      - REPOSITORY_URI=$ECR_BASE_URI)/$REPOSITORY_NAME
+      - REPOSITORY_URI=$ECR_BASE_URI/$REPOSITORY_NAME
       - echo Logging in to Amazon ECR...
       - aws --version
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_BASE_URI
