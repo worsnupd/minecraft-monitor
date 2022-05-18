@@ -12,7 +12,7 @@ const getMapDifferenceKeys = (a, b) => new Set([...a.keys()].filter(x => !b.has(
 const lambdaClient = new LambdaClient({ credentials: fromIni(), region: AWS_REGION });
 const snsClient = new SNSClient({ credentials: fromIni(), region: AWS_REGION });
 
-let currentOnlineUuidsMap = new Map();
+let currentOnlinePlayersMap = null;
 
 async function getOnlinePlayers() {
   const command = new InvokeCommand({
@@ -38,11 +38,18 @@ function publishMinecraftEvent(event) {
 
 async function monitorOnlinePlayers() {
   const { players } = await getOnlinePlayers();
-  const newOnlineUuidsMap = new Map(players.map(player => [player.uuid, player]));
-  const loggedInUuids = Array.from(getMapDifferenceKeys(newOnlineUuidsMap, currentOnlineUuidsMap));
-  const loggedOutUuids = Array.from(getMapDifferenceKeys(currentOnlineUuidsMap, newOnlineUuidsMap));
-  const loggedInPlayers = loggedInUuids.map(uuid => newOnlineUuidsMap.get(uuid));
-  const loggedOutPlayers = loggedOutUuids.map(uuid => currentOnlineUuidsMap.get(uuid));
+  const newOnlinePlayersMap = new Map(players.map(player => [player.uuid, player]));
+
+  // Don't publish events on monitor startup
+  if (currentOnlinePlayersMap === null) {
+    currentOnlinePlayersMap = newOnlinePlayersMap;
+    return;
+  }
+
+  const loggedInUuids = Array.from(getMapDifferenceKeys(newOnlinePlayersMap, currentOnlinePlayersMap));
+  const loggedOutUuids = Array.from(getMapDifferenceKeys(currentOnlinePlayersMap, newOnlinePlayersMap));
+  const loggedInPlayers = loggedInUuids.map(uuid => newOnlinePlayersMap.get(uuid));
+  const loggedOutPlayers = loggedOutUuids.map(uuid => currentOnlinePlayersMap.get(uuid));
   
   const promises = [];
   for (const player of loggedInPlayers) promises.push(publishMinecraftEvent({ type: 'PLAYER_LOG_IN', payload: { player } }));
@@ -51,7 +58,7 @@ async function monitorOnlinePlayers() {
   const results = await Promise.allSettled(promises);
   results.filter(({ status }) => status === 'rejected').map(({ reason }) => console.error(reason));
 
-  currentOnlineUuidsMap = newOnlineUuidsMap;
+  currentOnlinePlayersMap = newOnlinePlayersMap;
 }
 
 while (true) {
