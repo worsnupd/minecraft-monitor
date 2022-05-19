@@ -9,7 +9,6 @@ const DEFAULT_POLL_TIMEOUT = 1000;
 const sleep = (duration) => new Promise(resolve => setTimeout(resolve, duration));
 const getMapDifferenceKeys = (a, b) => new Set([...a.keys()].filter(x => !b.has(x))); // a - b
 
-// const credentials = fromIni();
 const lambdaClient = new LambdaClient({ region: AWS_REGION });
 const snsClient = new SNSClient({ region: AWS_REGION });
 
